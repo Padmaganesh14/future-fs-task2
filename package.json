@@ -1,0 +1,12 @@
+{
+  "name": "crm",
+  "version": "1.0.0",
+  "description": "## Features - View leads in a responsive table - Detailed summary and counters of lead statuses - Update lead statuses seamlessly - Track internal follow-up notes for each lead - Secure, easy-to-use pop-up modal for adding new leads",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
