@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, User, Mail, Link, Clock, X, LogOut, Trash2 } from 'lucide-react';
+import { Search, Plus, User, Mail, Link, Clock, X, LogOut, Trash2, PieChart as PieChartIcon, BarChart3, Users, Target, Activity, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import Login from './Login';
 import Signup from './Signup';
@@ -54,7 +54,6 @@ function App() {
   const handleUpdateLead = async (id, updates) => {
     try {
       await axios.put(`${API_URL}/update-lead/${id}`, updates);
-       
       setLeads(leads.map(lead => lead._id === id ? { ...lead, ...updates } : lead));
     } catch (err) {
       console.error("Error updating lead:", err);
@@ -88,29 +87,27 @@ function App() {
     converted: leads.filter(l => l.status === 'converted').length
   };
 
-  // Prepare data for Bar Chart (Status)
   const statusData = [
-    { name: 'New', count: stats.new, fill: '#58a6ff' },
-    { name: 'Contacted', count: stats.contacted, fill: '#f0c33d' },
-    { name: 'Converted', count: stats.converted, fill: '#2ea043' }
+    { name: 'New', count: stats.new, fill: '#00d2ff' },
+    { name: 'Contacted', count: stats.contacted, fill: '#d29922' },
+    { name: 'Converted', count: stats.converted, fill: '#3fb950' }
   ];
 
-  // Prepare data for Pie Chart (Source)
   const sourceRawData = leads.reduce((acc, lead) => {
     const source = lead.source || 'Unknown';
     acc[source] = (acc[source] || 0) + 1;
     return acc;
   }, {});
 
-  const COLORS = ['#a371f7', '#58a6ff', '#2ea043', '#f0c33d', '#ff7b72'];
+  const NEON_COLORS = ['#9d50bb', '#00d2ff', '#3fb950', '#d29922', '#f85149'];
   const sourceData = Object.keys(sourceRawData).map((key, index) => ({
     name: key,
     value: sourceRawData[key],
-    fill: COLORS[index % COLORS.length]
+    fill: NEON_COLORS[index % NEON_COLORS.length]
   }));
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
@@ -125,7 +122,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <h1>Nexus CRM</h1>
+        <h1><Activity size={28} /> Nexus CRM</h1>
         <div className="header-actions">
           <span className="admin-email">{adminEmail}</span>
           <button className="btn" onClick={() => setIsModalOpen(true)}>
@@ -139,44 +136,44 @@ function App() {
 
       <div className="stats-grid">
         <div className="stat-card">
+          <div className="stat-label"><Users size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Total Leads</div>
           <div className="stat-value">{stats.total}</div>
-          <div className="stat-label">Total Leads</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: '#58a6ff' }}>{stats.new}</div>
-          <div className="stat-label">New Opportunities</div>
+          <div className="stat-label"><Target size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> New Opportunities</div>
+          <div className="stat-value" style={{ color: 'var(--neon-blue)' }}>{stats.new}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: '#f0c33d' }}>{stats.contacted}</div>
-          <div className="stat-label">Currently Contacted</div>
+          <div className="stat-label"><Activity size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Contacted</div>
+          <div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.contacted}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: '#2ea043' }}>{stats.converted}</div>
-          <div className="stat-label">Successfully Converted</div>
+          <div className="stat-label"><CheckCircle2 size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Converted</div>
+          <div className="stat-value" style={{ color: 'var(--success)' }}>{stats.converted}</div>
         </div>
       </div>
 
       <div className="charts-grid">
         <div className="chart-card">
-          <h3>Lead Pipeline Status</h3>
-          <div style={{ width: '100%', height: 300 }}>
+          <h3><BarChart3 size={20} color="var(--neon-blue)" /> Lead Pipeline Status</h3>
+          <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
               <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <XAxis dataKey="name" stroke="#8b949e" tick={{ fill: '#8b949e' }} />
-                <YAxis stroke="#8b949e" tick={{ fill: '#8b949e' }} allowDecimals={false} />
+                <XAxis dataKey="name" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip 
                   cursor={{ fill: 'rgba(255,255,255,0.05)' }} 
-                  contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: 'rgba(13, 17, 23, 0.8)', border: '1px solid var(--glass-border)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
                 />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={50} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         
         <div className="chart-card">
-          <h3>Lead Sources</h3>
-          <div style={{ width: '100%', height: 300 }}>
+          <h3><PieChartIcon size={20} color="var(--neon-purple)" /> Lead Sources</h3>
+          <div style={{ width: '100%', height: 400 }}>
             {sourceData.length > 0 ? (
               <ResponsiveContainer>
                 <PieChart>
@@ -184,9 +181,9 @@ function App() {
                     data={sourceData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
+                    innerRadius={70}
                     outerRadius={100}
-                    paddingAngle={5}
+                    paddingAngle={8}
                     dataKey="value"
                     stroke="none"
                   >
@@ -194,12 +191,12 @@ function App() {
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                  <Tooltip contentStyle={{ backgroundColor: 'rgba(13, 17, 23, 0.8)', border: '1px solid var(--glass-border)', borderRadius: '12px', backdropFilter: 'blur(8px)' }} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
+              <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center', color: 'var(--text-muted)' }}>
                 No source data available
               </div>
             )}
@@ -208,23 +205,21 @@ function App() {
       </div>
 
       <div className="action-bar">
-        <div style={{ position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8b949e' }} />
+        <div className="search-container">
+          <Search size={18} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
             className="search-input" 
             placeholder="Search leads by name or email..." 
-            style={{ paddingLeft: '2.5rem' }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
         <select 
-          className="search-input" 
+          className="status-filter" 
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ width: 'auto' }}
         >
           <option value="all">All Statuses</option>
           <option value="new">New</option>
@@ -235,10 +230,10 @@ function App() {
 
       <div className="table-container">
         {loading ? (
-          <div className="loader"></div>
+          <div style={{ padding: '4rem', textAlign: 'center' }}><div className="loader"></div></div>
         ) : filteredLeads.length === 0 ? (
-          <div className="empty-state">
-            <User size={48} style={{ opacity: 0.5, margin: '0 auto 1rem', display: 'block' }} />
+          <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <Users size={48} style={{ opacity: 0.2, marginBottom: '1.5rem' }} />
             <h3>No leads found</h3>
             <p>Try adjusting your search or add a new lead.</p>
           </div>
@@ -248,31 +243,31 @@ function App() {
               <tr>
                 <th>Lead Info</th>
                 <th>Source</th>
-                <th>Date Added</th>
+                <th>Date</th>
                 <th>Status</th>
-                <th>Follow-up Notes</th>
-                <th className="action-col">Actions</th>
+                <th>Notes</th>
+                <th style={{ textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredLeads.map(lead => (
                 <tr key={lead._id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#fff', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <User size={14} /> {lead.name}
+                    <div style={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <User size={14} color="var(--neon-blue)" /> {lead.name}
                     </div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Mail size={14} /> {lead.email}
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.3rem' }}>
+                      <Mail size={12} /> {lead.email}
                     </div>
                   </td>
                   <td>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                      <Link size={14} /> {lead.source || 'Website'}
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Link size={12} /> {lead.source || 'Website'}
                     </span>
                   </td>
                   <td>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                      <Clock size={14} /> {formatDate(lead.createdAt)}
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Clock size={12} /> {formatDate(lead.createdAt)}
                     </span>
                   </td>
                   <td>
@@ -280,6 +275,12 @@ function App() {
                       className="status-select"
                       value={lead.status}
                       onChange={(e) => handleUpdateLead(lead._id, { status: e.target.value })}
+                      style={{ 
+                        borderColor: lead.status === 'new' ? 'var(--neon-blue)' : 
+                                    lead.status === 'contacted' ? 'var(--warning)' : 'var(--success)',
+                        color: lead.status === 'new' ? 'var(--neon-blue)' : 
+                               lead.status === 'contacted' ? 'var(--warning)' : 'var(--success)'
+                      }}
                     >
                       <option value="new">New</option>
                       <option value="contacted">Contacted</option>
@@ -290,7 +291,7 @@ function App() {
                     <textarea 
                       className="notes-input"
                       defaultValue={lead.notes || ''}
-                      placeholder="Add an internal note..."
+                      placeholder="Add note..."
                       onBlur={(e) => {
                         if (e.target.value !== lead.notes) {
                           handleUpdateLead(lead._id, { notes: e.target.value });
@@ -298,7 +299,7 @@ function App() {
                       }}
                     />
                   </td>
-                  <td className="action-col">
+                  <td style={{ textAlign: 'center' }}>
                     <button 
                       className="btn-delete"
                       onClick={() => handleDeleteLead(lead._id)}
@@ -317,15 +318,13 @@ function App() {
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1.5rem 0' }}>
-              <h2 style={{ margin: 0 }}>Add New Lead</h2>
-              <button 
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                onClick={() => setIsModalOpen(false)}
-              >
-                <X size={24} />
-              </button>
-            </div>
+            <button className="modal-close" onClick={() => setIsModalOpen(false)}>
+              <X size={24} />
+            </button>
+            
+            <h2 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Plus size={24} color="var(--neon-blue)" /> Add New Lead
+            </h2>
             
             <form onSubmit={handleAddLead}>
               <div className="form-group">
@@ -336,7 +335,7 @@ function App() {
                   className="form-input" 
                   value={newLead.name}
                   onChange={(e) => setNewLead({...newLead, name: e.target.value})}
-                  placeholder="John Doe"
+                  placeholder="e.g. John Wick"
                 />
               </div>
               <div className="form-group">
@@ -347,7 +346,7 @@ function App() {
                   className="form-input" 
                   value={newLead.email}
                   onChange={(e) => setNewLead({...newLead, email: e.target.value})}
-                  placeholder="john@example.com"
+                  placeholder="john@nexus.com"
                 />
               </div>
               <div className="form-group">
@@ -357,23 +356,23 @@ function App() {
                   className="form-input" 
                   value={newLead.source}
                   onChange={(e) => setNewLead({...newLead, source: e.target.value})}
-                  placeholder="Website, Referral, etc."
+                  placeholder="Website, LinkedIn, Meta, etc."
                 />
               </div>
               <div className="form-group">
-                <label>Initial Note</label>
+                <label>Initial Insights</label>
                 <textarea 
                   className="form-input" 
+                  style={{ minHeight: '100px', resize: 'none' }}
                   value={newLead.notes}
                   onChange={(e) => setNewLead({...newLead, notes: e.target.value})}
-                  placeholder="Interested in our enterprise plan..."
-                  rows="3"
+                  placeholder="What are they looking for?"
                 />
               </div>
               
-              <div className="modal-actions">
-                <button type="button" className="btn btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn">Add Lead</button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
+                <button type="button" className="btn btn-cancel" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn" style={{ flex: 2, justifyContent: 'center' }}>Add Lead</button>
               </div>
             </form>
           </div>

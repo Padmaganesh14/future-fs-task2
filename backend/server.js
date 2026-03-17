@@ -21,8 +21,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER || 'your-email@gmail.com', // Replace with your Gmail
-    pass: process.env.GMAIL_PASS || 'your-app-password'     // Replace with your 16-character App Password
+    user: process.env.GMAIL_USER || 'ganeshpadma730@gmail.com', // Replace with your Gmail
+    pass: process.env.GMAIL_PASS || 'rxdc mjvx veek lyad'     // Replace with your 16-character App Password
   }
 });
 
@@ -55,7 +55,7 @@ app.post("/signup", async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60000); // 10 minutes
+    const otpExpires = new Date(Date.now() + 10 * 60000); //  
 
     if (admin) {
       admin.otp = otp;
@@ -70,7 +70,7 @@ app.post("/signup", async (req, res) => {
 
     // Send Real Email
     await transporter.sendMail({
-      from: `"Nexus CRM" <${process.env.GMAIL_USER || 'your-email@gmail.com'}>`,
+      from: `"Nexus CRM" <${process.env.GMAIL_USER || 'ganeshpadma730@gmail.com'}>`,
       to: email, // The admin's signing up email
       subject: "Your CRM Verification OTP",
       text: `Your OTP is: ${otp}. It expires in 10 minutes.`,

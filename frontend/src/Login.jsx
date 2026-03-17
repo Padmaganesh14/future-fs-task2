@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Lock } from 'lucide-react';
+import { Lock, Activity, Mail, Key } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000';
 
@@ -32,32 +32,58 @@ function Login({ onLoginSuccess, onSwitchToSignup }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(88, 166, 255, 0.1)', padding: '1rem', borderRadius: '50%', marginBottom: '1rem' }}>
-            <Lock size={32} color="#58a6ff" />
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ 
+            display: 'inline-flex', 
+            background: 'rgba(0, 210, 255, 0.1)', 
+            padding: '1.2rem', 
+            borderRadius: '24px', 
+            marginBottom: '1.5rem',
+            border: '1px solid rgba(0, 210, 255, 0.2)',
+            animation: 'float 4s ease-in-out infinite'
+          }}>
+            <Lock size={36} color="var(--neon-blue)" />
           </div>
-          <h1 style={{ fontSize: '1.8rem', background: '-webkit-linear-gradient(45deg, #58a6ff, #a371f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-            Nexus CRM
+          <h1 style={{ 
+            fontSize: '2.2rem', 
+            background: 'linear-gradient(90deg, var(--neon-blue), var(--neon-cyan))', 
+            WebkitBackgroundClip: 'text', 
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent', 
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.8rem'
+          }}>
+            <Activity size={32} color="var(--neon-blue)" /> Nexus CRM
           </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Admin Portal Login</p>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem', fontSize: '1rem', fontWeight: 500 }}>
+            Secure Admin Portal Access
+          </p>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ marginBottom: '1.5rem' }}>{error}</div>}
         
         <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>Email Address</label>
+          <div className="form-group" style={{ marginBottom: '1.8rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Mail size={14} /> Email Address
+            </label>
             <input 
               type="email" 
               className="form-input" 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@nexuscrm.com"
+              placeholder="admin@nexuscrm.ai"
+              style={{ width: '100%' }}
             />
           </div>
-          <div className="form-group">
-            <label>Password</label>
+          <div className="form-group" style={{ marginBottom: '2rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Key size={14} /> Security Password
+            </label>
             <input 
               type="password" 
               className="form-input" 
@@ -65,15 +91,16 @@ function Login({ onLoginSuccess, onSwitchToSignup }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              style={{ width: '100%' }}
             />
           </div>
-          <button type="submit" className="btn btn-login" style={{ width: '100%', marginTop: '1rem', justifyContent: 'center' }} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+          <button type="submit" className="btn btn-login" style={{ width: '100%', padding: '1.1rem', justifyContent: 'center', fontSize: '1.1rem' }} disabled={loading}>
+            {loading ? <div className="loader" style={{ width: '24px', height: '24px' }}></div> : 'Enter Dashboard'}
           </button>
         </form>
         
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Don't have an account? <span onClick={onSwitchToSignup} style={{ color: '#58a6ff', cursor: 'pointer', fontWeight: 600 }}>Sign up</span>
+        <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+          System Authorization required. <span onClick={onSwitchToSignup} style={{ color: 'var(--neon-blue)', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>Request Access</span>
         </div>
       </div>
     </div>

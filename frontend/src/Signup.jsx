@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Mail, CheckCircle } from 'lucide-react';
+import { Mail, CheckCircle, Activity, Key, ShieldCheck } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000';
 
@@ -54,36 +54,56 @@ function Signup({ onSwitchToLogin, onSignupSuccess }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(88, 166, 255, 0.1)', padding: '1rem', borderRadius: '50%', marginBottom: '1rem' }}>
-            {step === 1 ? <Mail size={32} color="#58a6ff" /> : <CheckCircle size={32} color="#58a6ff" />}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ 
+            display: 'inline-flex', 
+            background: 'rgba(157, 80, 187, 0.1)', 
+            padding: '1.2rem', 
+            borderRadius: '24px', 
+            marginBottom: '1.5rem',
+            border: '1px solid rgba(157, 80, 187, 0.2)',
+            animation: 'float 4s ease-in-out infinite'
+          }}>
+            {step === 1 ? <ShieldCheck size={36} color="var(--neon-purple)" /> : <CheckCircle size={36} color="var(--success)" />}
           </div>
-          <h1 style={{ fontSize: '1.8rem', background: '-webkit-linear-gradient(45deg, #58a6ff, #a371f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-            Nexus CRM
+          <h1 style={{ 
+            fontSize: '2.2rem', 
+            background: 'linear-gradient(90deg, var(--neon-blue), var(--neon-purple))', 
+            WebkitBackgroundClip: 'text', 
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent', 
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.8rem'
+          }}>
+            <Activity size={32} color="var(--neon-blue)" /> Nexus CRM
           </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-            {step === 1 ? "Create Admin Account" : "Verify Your Email"}
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem', fontSize: '1rem', fontWeight: 500 }}>
+            {step === 1 ? "Initialize Admin Account" : "Identity Verification"}
           </p>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
-        {message && <div style={{ backgroundColor: 'rgba(46, 160, 67, 0.1)', color: '#2ea043', border: '1px solid rgba(46, 160, 67, 0.4)', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>{message}</div>}
+        {error && <div className="error-message" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+        {message && <div style={{ backgroundColor: 'rgba(63, 185, 80, 0.1)', color: 'var(--success)', border: '1px solid rgba(63, 185, 80, 0.2)', padding: '0.75rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.9rem', textAlign: 'center' }}>{message}</div>}
         
         {step === 1 ? (
           <form onSubmit={handleSendOtp}>
-            <div className="form-group">
-              <label>Email Address</label>
+            <div className="form-group" style={{ marginBottom: '1.8rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Mail size={14} /> Admin Email</label>
               <input 
                 type="email" 
                 className="form-input" 
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
+                placeholder="admin@nexuscrm.ai"
+                style={{ width: '100%' }}
               />
             </div>
-            <div className="form-group">
-              <label>Password</label>
+            <div className="form-group" style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Key size={14} /> Access Password</label>
               <input 
                 type="password" 
                 className="form-input" 
@@ -92,42 +112,43 @@ function Signup({ onSwitchToLogin, onSignupSuccess }) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength="6"
+                style={{ width: '100%' }}
               />
             </div>
-            <button type="submit" className="btn btn-login" style={{ width: '100%', marginTop: '1rem', justifyContent: 'center' }} disabled={loading}>
-              {loading ? "Sending..." : "Send Verification OTP"}
+            <button type="submit" className="btn" style={{ width: '100%', padding: '1.1rem', justifyContent: 'center', background: 'linear-gradient(45deg, var(--neon-purple), #7b2ff7)', boxShadow: '0 4px 15px rgba(157, 80, 187, 0.3)' }} disabled={loading}>
+              {loading ? <div className="loader" style={{ width: '24px', height: '24px' }}></div> : "Request Verification"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp}>
-            <div className="form-group">
-              <label>Enter 6-digit OTP</label>
+            <div className="form-group" style={{ marginBottom: '2rem' }}>
+              <label style={{ textAlign: 'center', display: 'block', marginBottom: '1rem' }}>Enter 6-digit Protocol Code</label>
               <input 
                 type="text" 
                 className="form-input" 
                 required
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="123456"
-                style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '4px' }}
+                placeholder="000000"
+                style={{ textAlign: 'center', fontSize: '1.8rem', letterSpacing: '8px', width: '100%', fontWeight: 700, background: 'rgba(255,255,255,0.05)' }}
               />
             </div>
-            <button type="submit" className="btn btn-login" style={{ width: '100%', marginTop: '1rem', justifyContent: 'center' }} disabled={loading}>
-              {loading ? "Verifying..." : "Verify & Login"}
+            <button type="submit" className="btn" style={{ width: '100%', padding: '1.1rem', justifyContent: 'center' }} disabled={loading}>
+              {loading ? <div className="loader" style={{ width: '24px', height: '24px' }}></div> : "Authorize & Login"}
             </button>
             <button 
               type="button" 
               className="btn btn-cancel" 
-              style={{ width: '100%', marginTop: '0.5rem', justifyContent: 'center' }} 
+              style={{ width: '100%', marginTop: '1rem', justifyContent: 'center', border: 'none' }} 
               onClick={() => { setStep(1); setOtp(''); }}
             >
-              Go Back
+              Back to Configuration
             </button>
           </form>
         )}
         
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Already have an account? <span onClick={onSwitchToLogin} style={{ color: '#58a6ff', cursor: 'pointer', fontWeight: 600 }}>Login here</span>
+        <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+          System account exists? <span onClick={onSwitchToLogin} style={{ color: 'var(--neon-blue)', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }}>Secure Login</span>
         </div>
       </div>
     </div>
