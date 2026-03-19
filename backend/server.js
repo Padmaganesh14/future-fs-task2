@@ -72,9 +72,7 @@ app.post("/signup", async (req, res) => {
     let admin = await Admin.findOne({ email });
 
     if (admin && admin.isVerified) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email already registered" });
+      return res.status(400).json({ success: false, message: "Email already registered" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -87,12 +85,7 @@ app.post("/signup", async (req, res) => {
       await admin.save();
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
-      admin = new Admin({
-        email,
-        password: hashedPassword,
-        otp,
-        otpExpires,
-      });
+      admin = new Admin({ email, password: hashedPassword, otp, otpExpires });
       await admin.save();
     }
 
@@ -103,15 +96,11 @@ app.post("/signup", async (req, res) => {
       text: `Your OTP is: ${otp}. It expires in 10 minutes.`,
     });
 
-    res.json({
-      success: true,
-      message: "OTP sent to your email!",
-    });
+    res.json({ success: true, message: "OTP sent to your email!" });
+
   } catch (error) {
     console.error("Signup Error:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to send email" });
+    res.status(500).json({ success: false, message: "Failed to send email" });
   }
 });
 
@@ -123,23 +112,10 @@ app.post("/verify-otp", async (req, res) => {
 
     const admin = await Admin.findOne({ email });
 
-    if (!admin)
-      return res.status(400).json({ success: false, message: "User not found" });
-
-    if (admin.isVerified)
-      return res
-        .status(400)
-        .json({ success: false, message: "Already verified" });
-
-    if (admin.otp !== otp)
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid OTP" });
-
-    if (admin.otpExpires < new Date())
-      return res
-        .status(400)
-        .json({ success: false, message: "OTP expired" });
+    if (!admin) return res.status(400).json({ success: false, message: "User not found" });
+    if (admin.isVerified) return res.status(400).json({ success: false, message: "Already verified" });
+    if (admin.otp !== otp) return res.status(400).json({ success: false, message: "Invalid OTP" });
+    if (admin.otpExpires < new Date()) return res.status(400).json({ success: false, message: "OTP expired" });
 
     admin.isVerified = true;
     admin.otp = undefined;
@@ -152,13 +128,10 @@ app.post("/verify-otp", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
-      success: true,
-      token,
-      message: "Verification successful",
-    });
+    res.json({ success: true, token, message: "Verification successful" });
+
   } catch (error) {
-    console.error("Verify Error:", error);
+    console.error("Verify Error:", error); // ✅ FIXED
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -171,22 +144,12 @@ app.post("/login", async (req, res) => {
 
     const admin = await Admin.findOne({ email });
 
-    if (!admin)
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
-
-    if (!admin.isVerified)
-      return res
-        .status(401)
-        .json({ success: false, message: "Account not verified" });
+    if (!admin) return res.status(401).json({ success: false, message: "Invalid credentials" });
+    if (!admin.isVerified) return res.status(401).json({ success: false, message: "Account not verified" });
 
     const isMatch = await bcrypt.compare(password, admin.password);
 
-    if (!isMatch)
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
+    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: admin._id, email: admin.email },
@@ -194,11 +157,8 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
-      success: true,
-      token,
-      email: admin.email,
-    });
+    res.json({ success: true, token, email: admin.email });
+
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -231,11 +191,7 @@ app.get("/leads", async (req, res) => {
 app.put("/update-lead/:id", async (req, res) => {
   try {
     await connectDB();
-    const updated = await Lead.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updated = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -256,9 +212,7 @@ app.delete("/delete-lead/:id", async (req, res) => {
 
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () =>
-    console.log(`Server running on port ${PORT}`)
-  );
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;
