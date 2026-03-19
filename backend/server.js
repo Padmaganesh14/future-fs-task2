@@ -1,4 +1,3 @@
-```js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -159,7 +158,7 @@ app.post("/verify-otp", async (req, res) => {
       message: "Verification successful",
     });
   } catch (error) {
-    console.error("Verify Error:", error); // ✅ FIXED HERE
+    console.error("Verify Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -263,13 +262,3 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 module.exports = app;
-```
-
----
-
- 
-
----
-
-If you want next:
-👉 I can check your **Email (OTP) config** also — that’s next possible issue 👍
