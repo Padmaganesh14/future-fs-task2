@@ -131,7 +131,7 @@ app.post("/verify-otp", async (req, res) => {
     res.json({ success: true, token, message: "Verification successful" });
 
   } catch (error) {
-    console.error("Verify Error:", error); // ✅ FIXED
+    console.error("Verify Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -212,8 +212,10 @@ app.delete("/delete-lead/:id", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
 module.exports = app;
