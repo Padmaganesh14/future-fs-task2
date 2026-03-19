@@ -1,4 +1,4 @@
-require("dotenv").config(); // Ensure dotenv is at the top of the file
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -11,7 +11,7 @@ const Admin = require("./models/Admin");
 
 const app = express();
 
-// Middleware — allow frontend URL set via FRONTEND_URL env var (for Vercel)
+// CORS — allow frontend URL from env var
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
@@ -20,7 +20,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (mobile apps, curl, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -31,46 +30,44 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Nodemailer Gmail Setup — credentials come from environment variables only
+// MongoDB connection — lazy connect so Vercel serverless works correctly
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected) return;
+  await mongoose.connect(process.env.MONGO_URI);
+  isConnected = true;
+  console.log("MongoDB Atlas Connected");
+};
+
+// Nodemailer Gmail Setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER,  // Set in Vercel env vars
-    pass: process.env.GMAIL_PASS   // Set in Vercel env vars (App Password, no spaces)
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
   }
 });
-
-// MongoDB Atlas Connection — URI comes from environment variable only
-mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-  console.log("MongoDB Atlas Connected");
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-})
-.catch(err => console.log(err));
 
 // Test route
 app.get("/", (req, res) => {
   res.send("CRM Backend Working");
 });
 
-
 /* ================= AUTH ROUTES ================= */
 
 // Send OTP / Signup
 app.post("/signup", async (req, res) => {
   try {
+    await connectDB();
     const { email, password } = req.body;
     let admin = await Admin.findOne({ email });
-    
+
     if (admin && admin.isVerified) {
       return res.status(400).json({ success: false, message: "Email already registered" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60000); //  
+    const otpExpires = new Date(Date.now() + 10 * 60000);
 
     if (admin) {
       admin.otp = otp;
@@ -83,17 +80,16 @@ app.post("/signup", async (req, res) => {
       await admin.save();
     }
 
-    // Send Real Email
     await transporter.sendMail({
       from: `"Nexus CRM" <${process.env.GMAIL_USER}>`,
-      to: email, // The admin's signing up email
+      to: email,
       subject: "Your CRM Verification OTP",
       text: `Your OTP is: ${otp}. It expires in 10 minutes.`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #58a6ff;">Nexus CRM</h2>
           <p>Hello,</p>
-          <p>You requested to create an Admin account. Please use the verification code below to complete your registration:</p>
+          <p>You requested to create an Admin account. Please use the verification code below:</p>
           <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 5px; margin: 20px 0;">
             ${otp}
           </div>
@@ -113,6 +109,7 @@ app.post("/signup", async (req, res) => {
 // Verify OTP
 app.post("/verify-otp", async (req, res) => {
   try {
+    await connectDB();
     const { email, otp } = req.body;
     const admin = await Admin.findOne({ email });
 
@@ -137,6 +134,7 @@ app.post("/verify-otp", async (req, res) => {
 // Admin Login
 app.post("/login", async (req, res) => {
   try {
+    await connectDB();
     const { email, password } = req.body;
     const admin = await Admin.findOne({ email });
 
@@ -159,6 +157,7 @@ app.post("/login", async (req, res) => {
 // Add Lead
 app.post("/add-lead", async (req, res) => {
   try {
+    await connectDB();
     const lead = new Lead(req.body);
     await lead.save();
     res.status(201).json({ message: "Lead added", lead });
@@ -170,6 +169,7 @@ app.post("/add-lead", async (req, res) => {
 // Get all leads
 app.get("/leads", async (req, res) => {
   try {
+    await connectDB();
     const leads = await Lead.find().sort({ createdAt: -1 });
     res.json(leads);
   } catch (error) {
@@ -180,6 +180,7 @@ app.get("/leads", async (req, res) => {
 // Update lead
 app.put("/update-lead/:id", async (req, res) => {
   try {
+    await connectDB();
     const updatedLead = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ message: "Lead updated", lead: updatedLead });
   } catch (error) {
@@ -190,9 +191,19 @@ app.put("/update-lead/:id", async (req, res) => {
 // Delete lead
 app.delete("/delete-lead/:id", async (req, res) => {
   try {
+    await connectDB();
     await Lead.findByIdAndDelete(req.params.id);
     res.json({ message: "Lead deleted" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+// For local development — only listen when not running on Vercel
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// CRITICAL for Vercel — export the app as a serverless function
+module.exports = app;
