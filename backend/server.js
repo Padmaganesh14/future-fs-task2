@@ -11,27 +11,42 @@ const Admin = require("./models/Admin");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware — allow frontend URL set via FRONTEND_URL env var (for Vercel)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:4173',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
-// Nodemailer Real Gmail Setup
-// IMPORTANT: You must create an App Password in your Google Account for this to work
-// https://myaccount.google.com/apppasswords
+// Nodemailer Gmail Setup — credentials come from environment variables only
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER || 'ganeshpadma730@gmail.com', // Replace with your Gmail
-    pass: process.env.GMAIL_PASS || 'rxdc mjvx veek lyad'     // Replace with your 16-character App Password
+    user: process.env.GMAIL_USER,  // Set in Vercel env vars
+    pass: process.env.GMAIL_PASS   // Set in Vercel env vars (App Password, no spaces)
   }
 });
 
-// MongoDB Atlas Connection
-mongoose.connect("mongodb+srv://Padmaganesh14:ganesh123@cluster0.jril3ws.mongodb.net/crm?retryWrites=true&w=majority")
+// MongoDB Atlas Connection — URI comes from environment variable only
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
   console.log("MongoDB Atlas Connected");
-  app.listen(5000, () => {
-    console.log("Server running on port 5000");
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
 })
 .catch(err => console.log(err));
@@ -70,7 +85,7 @@ app.post("/signup", async (req, res) => {
 
     // Send Real Email
     await transporter.sendMail({
-      from: `"Nexus CRM" <${process.env.GMAIL_USER || 'ganeshpadma730@gmail.com'}>`,
+      from: `"Nexus CRM" <${process.env.GMAIL_USER}>`,
       to: email, // The admin's signing up email
       subject: "Your CRM Verification OTP",
       text: `Your OTP is: ${otp}. It expires in 10 minutes.`,
@@ -111,7 +126,7 @@ app.post("/verify-otp", async (req, res) => {
     admin.otpExpires = undefined;
     await admin.save();
 
-    const token = jwt.sign({ id: admin._id, email: admin.email }, "supersecretjwtkey", { expiresIn: "1d" });
+    const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.json({ success: true, token, message: "Verification successful" });
   } catch (error) {
     console.error("Verify Error:", error);
@@ -131,7 +146,7 @@ app.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: admin._id, email: admin.email }, "supersecretjwtkey", { expiresIn: "1d" });
+    const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.json({ success: true, token, message: "Login successful", email: admin.email });
   } catch (error) {
     console.error("Login Error:", error);

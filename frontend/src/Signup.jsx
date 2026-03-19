@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Mail, CheckCircle, Activity, Key, ShieldCheck } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Signup({ onSwitchToLogin, onSignupSuccess }) {
   const [step, setStep] = useState(1);
