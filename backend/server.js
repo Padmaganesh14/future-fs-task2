@@ -5,6 +5,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const path = require("path");
 
 const Lead = require("./models/Lead");
 const Admin = require("./models/Admin");
@@ -207,6 +208,17 @@ app.delete("/delete-lead/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+/* ================= SERVE STATIC FRONTEND ================= */
+
+// Serve frontend dist logically when in production
+if (process.env.NODE_ENV === "production" || process.env.RENDER) {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  });
+}
 
 /* ================= SERVER ================= */
 
