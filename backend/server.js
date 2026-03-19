@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config(); // Ensure dotenv is at the top of the file
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -11,7 +11,7 @@ const Admin = require("./models/Admin");
 
 const app = express();
 
-// CORS — allow frontend URL from env var
+// Middleware — allow frontend URL set via FRONTEND_URL env var (for Vercel)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
@@ -20,6 +20,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
+    // allow requests with no origin (mobile apps, curl, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -39,12 +40,12 @@ const connectDB = async () => {
   console.log("MongoDB Atlas Connected");
 };
 
-// Nodemailer Gmail Setup
+// Nodemailer Gmail Setup — credentials come from environment variables only
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
+    user: process.env.GMAIL_USER,  // Set in Vercel env vars
+    pass: process.env.GMAIL_PASS   // Set in Vercel env vars (App Password, no spaces)
   }
 });
 
@@ -67,7 +68,7 @@ app.post("/signup", async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60000);
+    const otpExpires = new Date(Date.now() + 10 * 60000); //
 
     if (admin) {
       admin.otp = otp;
@@ -80,16 +81,17 @@ app.post("/signup", async (req, res) => {
       await admin.save();
     }
 
+    // Send Real Email
     await transporter.sendMail({
       from: `"Nexus CRM" <${process.env.GMAIL_USER}>`,
-      to: email,
+      to: email, // The admin's signing up email
       subject: "Your CRM Verification OTP",
       text: `Your OTP is: ${otp}. It expires in 10 minutes.`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #58a6ff;">Nexus CRM</h2>
           <p>Hello,</p>
-          <p>You requested to create an Admin account. Please use the verification code below:</p>
+          <p>You requested to create an Admin account. Please use the verification code below to complete your registration:</p>
           <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 5px; margin: 20px 0;">
             ${otp}
           </div>
@@ -126,7 +128,7 @@ app.post("/verify-otp", async (req, res) => {
     const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.json({ success: true, token, message: "Verification successful" });
   } catch (error) {
-    console.error("Verify Error:", error);
+    console.error("Verify Error:\", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -199,11 +201,11 @@ app.delete("/delete-lead/:id", async (req, res) => {
   }
 });
 
-// For local development — only listen when not running on Vercel
+// For local development only — Vercel does NOT use app.listen()
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
-// CRITICAL for Vercel — export the app as a serverless function
+// CRITICAL for Vercel — export app as serverless function
 module.exports = app;
