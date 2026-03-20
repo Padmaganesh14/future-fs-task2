@@ -13,7 +13,6 @@ const Admin = require("./models/Admin");
 const app = express();
 
 /* ================= CORS ================= */
-
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
@@ -32,11 +31,9 @@ app.use(cors({
   },
   credentials: true,
 }));
-
-app.options("*", cors()); // handle preflight
+ 
 
 app.use(express.json());
-
 /* ================= DATABASE ================= */
 
 let isConnected = false;
