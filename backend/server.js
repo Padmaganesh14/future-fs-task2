@@ -18,20 +18,22 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
   "http://localhost:4173",
+  "https://future-fs-task2.vercel.app"
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
+
+app.options("*", cors()); // handle preflight
 
 app.use(express.json());
 
@@ -209,16 +211,21 @@ app.delete("/delete-lead/:id", async (req, res) => {
   }
 });
 
-/* ================= SERVE STATIC FRONTEND ================= */
+/* ================= SERVE FRONTEND ================= */
 
-// Serve frontend dist logically when in production
 if (process.env.NODE_ENV === "production" || process.env.RENDER) {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
-  });
 }
+
+/* ================= FALLBACK ================= */
+
+// ✅ IMPORTANT (no "*" or "/*")
+app.use((req, res) => {
+  if (process.env.NODE_ENV === "production" || process.env.RENDER) {
+    return res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  }
+  res.status(404).json({ message: "Route not found" });
+});
 
 /* ================= SERVER ================= */
 
