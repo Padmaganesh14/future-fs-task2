@@ -65,7 +65,7 @@ function App() {
   const handleAddLead = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/add-lead`, newLead);
+      await axios.post(`${API_URL}/leads`, newLead);
       setIsModalOpen(false);
       setNewLead({ name: '', email: '', source: 'Website', notes: '' });
       fetchLeads();

@@ -14,7 +14,9 @@ const app = express();
 
 /* ================= CORS ================= */
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL?.trim().replace(/\/$/, ""),
+  process.env.RENDER_FRONTEND_URL?.trim().replace(/\/$/, ""),
+  "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:4173",
   "https://future-fs-task2.vercel.app"
@@ -99,8 +101,11 @@ app.post("/signup", async (req, res) => {
     res.json({ success: true, message: "OTP sent to your email!" });
 
   } catch (error) {
-    console.error("Signup Error:", error);
-    res.status(500).json({ success: false, message: "Failed to send email" });
+    console.error("Signup Error (Full):", error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message.includes("auth") ? "Database Auth Failed" : "Failed to process signup"
+    });
   }
 });
 
@@ -167,13 +172,14 @@ app.post("/login", async (req, res) => {
 
 /* ================= LEAD ROUTES ================= */
 
-app.post("/add-lead", async (req, res) => {
+app.post("/leads", async (req, res) => {
   try {
     await connectDB();
     const lead = new Lead(req.body);
     await lead.save();
     res.status(201).json(lead);
   } catch (error) {
+    console.error("Add Lead Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
